@@ -6,4 +6,10 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/v1/debts")
-class DebtController(debtService: DebtService): BasicController<Debt, Int>(debtService)
+class DebtController(debtService: DebtService): BasicController<Debt, Int>(debtService){
+    @RequestMapping("/")
+    fun test(): String {
+        return "Camilo soy yo"
+    }
+
+}
