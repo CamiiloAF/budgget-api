@@ -10,7 +10,7 @@ import javax.validation.Valid
 abstract class BasicController<T, ID>(private val basicCrud: BasicCrud<T, ID>) {
     @GetMapping
     fun findAll(): ApiResponse<List<T>> {
-        val entity =basicCrud.findAll()
+        val entity = basicCrud.findAll()
         val status = if (!entity.isNullOrEmpty()) HttpStatus.OK else HttpStatus.NOT_FOUND
         return ApiResponse(status = status.value(), payload = entity)
 
@@ -30,16 +30,20 @@ abstract class BasicController<T, ID>(private val basicCrud: BasicCrud<T, ID>) {
             )
 
     @PutMapping
-    fun update(@Valid @RequestBody body: T): ApiResponse<T> {
+    fun update(@Valid @RequestBody body: T): ResponseEntity<ApiResponse<T>> {
         val entity = basicCrud.update(body)
         val status = if (entity != null) HttpStatus.NO_CONTENT else HttpStatus.CONFLICT
-        return ApiResponse(status = status.value(), payload = entity)
+        return ResponseEntity.status(status).body(
+                ApiResponse(status = status.value(), payload = entity)
+        )
     }
 
     @DeleteMapping("{id}")
-    fun delete(@PathVariable id: ID): ApiResponse<T> {
+    fun delete(@PathVariable id: ID): ResponseEntity<ApiResponse<T>> {
         val entity = basicCrud.deleteById(id)
-        val status = if (entity != null) HttpStatus.OK else HttpStatus.CONFLICT
-        return ApiResponse(status = status.value(), payload = entity)
+        val status = if (entity != null) HttpStatus.NO_CONTENT else HttpStatus.CONFLICT
+        return ResponseEntity.status(status).body(
+                ApiResponse(status = status.value(), payload = entity)
+        )
     }
 }

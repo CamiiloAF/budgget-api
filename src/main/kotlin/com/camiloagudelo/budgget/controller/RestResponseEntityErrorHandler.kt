@@ -21,8 +21,10 @@ class RestResponseEntityErrorHandler : ResponseEntityExceptionHandler() {
 
     @ExceptionHandler(DuplicateKeyException::class, EntityNotFoundException::class)
     fun handleJpa(exception: Exception): ResponseEntity<ApiErrorResponse> {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+        val status = HttpStatus.CONFLICT
+        return ResponseEntity.status(status).body(
                 ApiErrorResponse(
+                        status = status.value(),
                         title = exception::class.simpleName.toString(),
                         message = exception.localizedMessage
                 )
