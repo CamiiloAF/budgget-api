@@ -1,6 +1,6 @@
 package com.camiloagudelo.budgget.controller
 
-import com.camiloagudelo.budgget.dto.ApiResponse
+import com.camiloagudelo.budgget.dto.ApiErrorResponse
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -20,9 +20,9 @@ class RestResponseEntityErrorHandler : ResponseEntityExceptionHandler() {
     }
 
     @ExceptionHandler(DuplicateKeyException::class, EntityNotFoundException::class)
-    fun handleJpa(exception: Exception): ResponseEntity<ApiResponse> {
+    fun handleJpa(exception: Exception): ResponseEntity<ApiErrorResponse> {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                ApiResponse(
+                ApiErrorResponse(
                         title = exception::class.simpleName.toString(),
                         message = exception.localizedMessage
                 )

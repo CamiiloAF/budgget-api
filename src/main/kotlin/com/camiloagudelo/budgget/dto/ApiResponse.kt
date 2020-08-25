@@ -1,3 +1,3 @@
 package com.camiloagudelo.budgget.dto
 
-data class ApiResponse(val title: String, val message: String)
+data class ApiResponse<T>(val status: Int, val payload: T?)

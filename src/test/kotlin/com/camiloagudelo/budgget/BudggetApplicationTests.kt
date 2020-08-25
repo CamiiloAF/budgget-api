@@ -1,6 +1,7 @@
 package com.camiloagudelo.budgget
 
 import com.camiloagudelo.budgget.domain.Debt
+import com.camiloagudelo.budgget.dto.ApiResponse
 import com.camiloagudelo.budgget.service.DebtService
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.hamcrest.MatcherAssert.assertThat
@@ -41,11 +42,11 @@ class BudggetApplicationTests {
     fun findAll() {
         val debtsFromService = debtService.findAll()
 
-        val debts: List<Debt> = mockMvc.perform(MockMvcRequestBuilders.get(debtsEndPoint))
+        val debts: ApiResponse<List<Debt>> = mockMvc.perform(MockMvcRequestBuilders.get(debtsEndPoint))
                 .andExpect(status().isOk)
                 .bodyTo(mapper)
 
-        assertThat(debtsFromService, Matchers.`is`(Matchers.equalTo(debts)))
+        assertThat(debtsFromService, Matchers.`is`(Matchers.equalTo(debts.payload)))
     }
 
     @Test
@@ -54,14 +55,14 @@ class BudggetApplicationTests {
 
         mockMvc.perform(MockMvcRequestBuilders.get("$debtsEndPoint${debt.id}"))
                 .andExpect(status().isOk)
-                .andExpect(jsonPath("$.oweTo", Matchers.`is`(debt.oweTo)))
+                .andExpect(jsonPath("$.payload.oweTo", Matchers.`is`(debt.oweTo)))
     }
 
     @Test
     fun findByIdEmpty() {
         mockMvc.perform(MockMvcRequestBuilders.get("$debtsEndPoint/-1"))
                 .andExpect(status().isNotFound)
-                .andExpect(jsonPath("$").doesNotExist())
+                .andExpect(jsonPath("$.payload").doesNotExist())
     }
 
     @Test
@@ -74,12 +75,12 @@ class BudggetApplicationTests {
                 debtPaid = 99999.9
         )
 
-        val debtFromApi: Debt = mockMvc.perform(MockMvcRequestBuilders.post(debtsEndPoint)
+        val debtFromApi: ApiResponse<Debt> = mockMvc.perform(MockMvcRequestBuilders.post(debtsEndPoint)
                 .body(data = debt, mapper = mapper))
                 .andExpect(status().isCreated)
                 .bodyTo(mapper)
 
-        assert(debtService.findAll().contains(debtFromApi))
+        assert(debtService.findAll().contains(debtFromApi.payload))
     }
 
     @Test
@@ -96,14 +97,13 @@ class BudggetApplicationTests {
     fun updateSuccessFully() {
         val debt = getOneDebtFromService().copy(oweTo = "Other oweTo name")
 
-        val debtFromApi: Debt = mockMvc.perform(MockMvcRequestBuilders.put(debtsEndPoint)
+        val debtFromApi: ApiResponse<Debt> = mockMvc.perform(MockMvcRequestBuilders.put(debtsEndPoint)
                 .body(data = debt, mapper = mapper))
                 .andExpect(status().isOk)
                 .bodyTo(mapper)
 
-        assertThat(debtService.findById(debt.id), Matchers.`is`(debtFromApi))
+        assertThat(debtService.findById(debt.id), Matchers.`is`(debtFromApi.payload))
     }
-
 
     @Test
     fun updateFailed() {
@@ -126,11 +126,11 @@ class BudggetApplicationTests {
     fun deleteByIdSuccessFully() {
         val debt = getOneDebtFromService(takeFirst = false)
 
-        val debtFromApi: Debt = mockMvc.perform(MockMvcRequestBuilders.delete("$debtsEndPoint/${debt.id}"))
+        val debtFromApi: ApiResponse<Debt> = mockMvc.perform(MockMvcRequestBuilders.delete("$debtsEndPoint/${debt.id}"))
                 .andExpect(status().isOk)
                 .bodyTo(mapper)
 
-        assert(!debtService.findAll().contains(debtFromApi))
+        assert(!debtService.findAll().contains(debtFromApi.payload))
     }
 
     @Test
@@ -154,7 +154,6 @@ class BudggetApplicationTests {
                 .body(data = debt, mapper = mapper))
                 .andExpect(status().isBadRequest)
                 .andExpect(jsonPath("$.oweTo").exists())
-
     }
 
     @Test
